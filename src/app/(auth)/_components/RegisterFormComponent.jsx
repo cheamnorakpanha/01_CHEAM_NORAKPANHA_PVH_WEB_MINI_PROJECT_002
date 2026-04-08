@@ -2,6 +2,7 @@
 
 import { Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
+import { registerAction } from "@/action/register.action";
 
 export default function RegisterFormComponent() {
   const {
@@ -17,8 +18,23 @@ export default function RegisterFormComponent() {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    const nameParts = data.name.trim().split(/\s+/);
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    const registData = {
+      firstName,
+      lastName,
+      email: data.email,
+      password: data.password,
+      birthDate: data.birthdate,
+    };
+
+    const result = await registerAction(registData);
+    if (result.status !== "201 CREATED") {
+      console.error("Registration failed:", result);
+    }
   };
 
   return (

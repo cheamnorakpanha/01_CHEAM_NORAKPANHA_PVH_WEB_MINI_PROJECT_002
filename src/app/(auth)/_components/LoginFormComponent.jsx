@@ -21,15 +21,23 @@ export default function LoginFormComponent() {
 
   const onSubmit = async (data) => {
     setSubmitError("");
+    console.log("Attempting login with email:", data.email);
 
     const formData = new FormData();
     formData.append("email", data.email);
     formData.append("password", data.password);
 
-    const res = await signInAction(formData);
-
-    if (res?.error) {
-      setSubmitError(res.error);
+    try {
+      const res = await signInAction(formData);
+      if (res?.error) {
+        console.error("Login failed:", res.error);
+        setSubmitError(res.error);
+      } else {
+        console.log("Login call completed (redirecting...)");
+      }
+    } catch (error) {
+      console.error("Login unexpected error:", error);
+      setSubmitError("An unexpected error occurred during login.");
     }
   };
 
