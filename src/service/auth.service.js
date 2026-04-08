@@ -5,7 +5,7 @@ const loginService = async (request) => {
   };
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/auths/login`,
+    `${process.env.AUTH_API_URL}/auths/login`,
     {
       method: "POST",
       headers: {
