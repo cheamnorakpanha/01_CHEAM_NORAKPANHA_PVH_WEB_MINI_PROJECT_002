@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
+import { Button } from "@heroui/react";
+import { signInAction } from "../../../action/signin.action";
 
 export default function LoginFormComponent() {
   const [submitError, setSubmitError] = useState("");
@@ -18,15 +19,24 @@ export default function LoginFormComponent() {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
-    setSubmitError("Demo only — no login backend is connected yet.");
+  const onSubmit = async (data) => {
+    setSubmitError("");
+
+    const formData = new FormData();
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+
+    const res = await signInAction(formData);
+
+    if (res?.error) {
+      setSubmitError(res.error);
+    }
   };
 
   return (
     <form
-      className="mt-8 space-y-5"
       onSubmit={handleSubmit(onSubmit)}
+      className="mt-8 space-y-5"
       noValidate
     >
       {submitError && (
@@ -43,6 +53,7 @@ export default function LoginFormComponent() {
           Email
         </label>
         <input
+          name="email"
           id="login-email"
           type="email"
           autoComplete="email"
@@ -60,6 +71,7 @@ export default function LoginFormComponent() {
           Password
         </label>
         <input
+          name="password"
           id="login-password"
           type="password"
           autoComplete="current-password"
