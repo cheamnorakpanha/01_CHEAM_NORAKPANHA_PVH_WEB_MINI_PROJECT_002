@@ -4,19 +4,29 @@ const loginService = async (request) => {
     password: request.password,
   };
 
-  const response = await fetch(
-    `${process.env.AUTH_API_URL}/auths/login`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
+  const response = await fetch(`${process.env.AUTH_API_URL}/auths/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify(user),
+  });
 
   const loggedInUser = await response.json();
   return loggedInUser;
 };
 
-export { loginService };
+const registerService = async (request) => {
+  const response = await fetch(`${process.env.AUTH_API_URL}/auths/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+
+  const result = await response.json();
+  return result;
+};
+
+export { loginService, registerService };
