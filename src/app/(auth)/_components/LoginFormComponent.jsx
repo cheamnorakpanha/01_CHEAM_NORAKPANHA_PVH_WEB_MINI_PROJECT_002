@@ -33,9 +33,9 @@ export default function LoginFormComponent() {
     try {
       const res = await signInAction(formData);
 
-      if (res?.error) {
-        console.error("Login failed:", res.error);
-        setSubmitError(res.error);
+      if (res && !res.success) {
+        console.error("Login failed:", res.message);
+        setSubmitError(res.message);
       }
     } catch (error) {
       if (error.message?.includes("NEXT_REDIRECT")) {
