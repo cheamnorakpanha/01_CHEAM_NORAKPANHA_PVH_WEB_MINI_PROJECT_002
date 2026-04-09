@@ -7,18 +7,20 @@ export const registerAction = async (userData) => {
   try {
     const result = await registerService(userData);
 
-    if (!result.success) {
+    if (result && !result.success) {
       return {
         success: false,
         message: result.message || "Registration failed",
       };
     }
-
-    redirect("/login");
   } catch (error) {
+    if (error.digest?.includes("NEXT_REDIRECT")) {
+      throw error;
+    }
     return {
       success: false,
       message: "Server error. Please try again.",
     };
   }
+  redirect("/login");
 };
