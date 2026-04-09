@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginFormSchema } from "@/validations/login.schema";
 import { signInAction } from "../../../action/signin.action";
 
 export default function LoginFormComponent() {
@@ -13,6 +15,7 @@ export default function LoginFormComponent() {
     handleSubmit,
     formState: { errors },
   } = useForm({
+    resolver: zodResolver(LoginFormSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -29,13 +32,16 @@ export default function LoginFormComponent() {
 
     try {
       const res = await signInAction(formData);
+
       if (res?.error) {
         console.error("Login failed:", res.error);
         setSubmitError(res.error);
-      } else {
-        console.log("Login call completed (redirecting...)");
       }
     } catch (error) {
+      if (error.message?.includes("NEXT_REDIRECT")) {
+        return;
+      }
+
       console.error("Login unexpected error:", error);
       setSubmitError("An unexpected error occurred during login.");
     }
@@ -69,6 +75,9 @@ export default function LoginFormComponent() {
           className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none ring-lime-400/20 focus:border-lime-400 focus:ring-2"
           placeholder="you@example.com"
         />
+        {errors.email && (
+          <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+        )}
       </div>
 
       <div>
@@ -87,6 +96,9 @@ export default function LoginFormComponent() {
           className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none ring-lime-400/20 focus:border-lime-400 focus:ring-2"
           placeholder="••••••••"
         />
+        {errors.password && (
+          <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+        )}
       </div>
 
       <Button

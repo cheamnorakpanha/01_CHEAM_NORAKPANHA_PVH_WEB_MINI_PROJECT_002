@@ -1,27 +1,33 @@
 "use server";
 
 import { signIn } from "@/libs/auth";
+import { LoginFormSchema } from "@/validations/login.schema";
 
 export const signInAction = async (formData) => {
   try {
-    const email = formData.get("email");
-    const password = formData.get("password");
+    const data = Object.fromEntries(formData.entries());
+    const validatedFields = LoginFormSchema.safeParse(data);
 
-    if (!email || !password) {
+    if (!validatedFields.success) {
       return {
         success: false,
-        message: "Email and password are required",
+        message: "Validation failed",
+        errors: validatedFields.error.flatten().fieldErrors,
       };
     }
+
+    const { email, password } = validatedFields.data;
 
     await signIn("credentials", {
       email,
       password,
       redirectTo: "/",
     });
-
-    return { success: true };
   } catch (error) {
+    if (error.message?.includes("NEXT_REDIRECT")) {
+      throw error;
+    }
+
     console.error("Login error:", error);
 
     return {

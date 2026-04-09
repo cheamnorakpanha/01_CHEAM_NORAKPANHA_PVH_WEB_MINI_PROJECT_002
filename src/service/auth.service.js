@@ -12,6 +12,10 @@ const loginService = async (request) => {
     body: JSON.stringify(user),
   });
 
+  if (!response.ok) {
+    return null;
+  }
+
   const loggedInUser = await response.json();
   return loggedInUser;
 };
