@@ -7,10 +7,12 @@ export const registerAction = async (userData) => {
   try {
     const result = await registerService(userData);
 
-    if (result && !result.success) {
+    if (result && result.status !== "201 CREATED" && result.status !== 201) {
       return {
         success: false,
-        message: result.message || "Registration failed",
+        message:
+          result.message ||
+          "Registration failed. Please check your information.",
       };
     }
   } catch (error) {
