@@ -18,7 +18,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         const response = await loginService(credentials);
-        return response;
+        if (response && response.status === "200 OK") {
+          console.log(">>> [Server] Login success. Full response:", response);
+          return response.payload;
+        }
+        return null;
       },
     }),
   ],
