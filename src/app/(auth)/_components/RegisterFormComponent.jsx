@@ -1,15 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { registerAction } from "@/action/register.action";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RegisterFormSchema } from "@/validations/register.schema";
 
 export default function RegisterFormComponent() {
+  const [submitError, setSubmitError] = useState("");
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
+    resolver: zodResolver(RegisterFormSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -19,6 +24,7 @@ export default function RegisterFormComponent() {
   });
 
   const onSubmit = async (data) => {
+    setSubmitError("");
     const nameParts = data.name.trim().split(/\s+/);
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
@@ -31,9 +37,16 @@ export default function RegisterFormComponent() {
       birthDate: data.birthdate,
     };
 
-    const result = await registerAction(registData);
-    if (result.status !== "201 CREATED") {
-      console.error("Registration failed:", result);
+    try {
+      const result = await registerAction(registData);
+      if (result && !result.success) {
+        setSubmitError(
+          result.message || "Registration failed. Please try again.",
+        );
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setSubmitError("An unexpected error occurred.");
     }
   };
 
@@ -43,6 +56,12 @@ export default function RegisterFormComponent() {
       onSubmit={handleSubmit(onSubmit)}
       noValidate
     >
+      {submitError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {submitError}
+        </div>
+      )}
+
       {/* Name */}
       <div>
         <label className="block text-sm font-medium text-gray-700">
@@ -54,6 +73,9 @@ export default function RegisterFormComponent() {
           placeholder="Jane Doe"
           className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none ring-lime-400/20 focus:border-lime-400 focus:ring-2"
         />
+        {errors.name && (
+          <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+        )}
       </div>
 
       {/* Email */}
@@ -65,6 +87,9 @@ export default function RegisterFormComponent() {
           placeholder="you@example.com"
           className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none ring-lime-400/20 focus:border-lime-400 focus:ring-2"
         />
+        {errors.email && (
+          <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+        )}
       </div>
 
       {/* Password */}
@@ -78,6 +103,9 @@ export default function RegisterFormComponent() {
           placeholder="••••••••"
           className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none ring-lime-400/20 focus:border-lime-400 focus:ring-2"
         />
+        {errors.password && (
+          <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+        )}
       </div>
 
       {/* Birthdate */}
@@ -90,11 +118,17 @@ export default function RegisterFormComponent() {
           {...register("birthdate")}
           className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none ring-lime-400/20 focus:border-lime-400 focus:ring-2"
         />
+        {errors.birthdate && (
+          <p className="mt-1 text-xs text-red-500">
+            {errors.birthdate.message}
+          </p>
+        )}
       </div>
 
       <Button
         type="submit"
         variant="solid"
+        isLoading={isSubmitting}
         className="w-full rounded-full bg-lime-400 py-3.5 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-lime-300"
       >
         Create account
