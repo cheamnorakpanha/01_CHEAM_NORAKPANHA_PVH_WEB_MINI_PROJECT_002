@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Button } from "@heroui/react";
+import { useState, useRef, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
 // import { useCart } from "@/store/cartStore";
 
 const centerLinks = [
@@ -35,7 +36,8 @@ function CartBagIcon({ className }) {
 
 function linkActive(pathname, label) {
   if (label === "Home") return pathname === "/";
-  if (label === "Shop") return pathname === "/products" || pathname.startsWith("/products/");
+  if (label === "Shop")
+    return pathname === "/products" || pathname.startsWith("/products/");
   if (label === "Categories") return pathname === "/categories";
   if (label === "Orders") return pathname === "/orders";
   if (label === "Manage Products") return pathname === "/manage-products";
@@ -55,12 +57,21 @@ function authLinkClass(pathname, path, filled = false) {
 }
 
 export default function NavbarComponent() {
+  const { data: session } = useSession();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-//   const { totalQuantity } = useCart();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-//   const cartLabel =
-//     totalQuantity > 0 ? `Shopping cart, ${totalQuantity} items` : "Shopping cart";
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const linkClass = (active) =>
     `relative flex items-center rounded-full px-3 py-2 text-sm font-medium transition ${
@@ -84,8 +95,12 @@ export default function NavbarComponent() {
           {centerLinks.map(({ href, label, badge }) => {
             const active = linkActive(pathname, label);
             return (
-              <Link key={href + label} href={href} className={linkClass(active)}>
-              {/* <Link key={href + label} href={href}> */}
+              <Link
+                key={href + label}
+                href={href}
+                className={linkClass(active)}
+              >
+                {/* <Link key={href + label} href={href}> */}
                 {badge && (
                   <span className="absolute -top-2 z-20 left-1/2 -translate-x-1/2 rounded-full bg-lime-400 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-gray-900">
                     {badge}
@@ -101,12 +116,56 @@ export default function NavbarComponent() {
 
         <div className="z-10 flex items-center gap-2 sm:gap-3">
           <div className="hidden items-center gap-2 sm:flex">
-            <Link href="/login" className={authLinkClass(pathname, "/login", false)}>
-              Log in
-            </Link>
-            <Link href="/register" className={authLinkClass(pathname, "/register", true)}>
-              Register
-            </Link>
+            {!session ? (
+              <>
+                <Link
+                  href="/login"
+                  className={authLinkClass(pathname, "/login", false)}
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/register"
+                  className={authLinkClass(pathname, "/register", true)}
+                >
+                  Register
+                </Link>
+              </>
+            ) : (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex h-9 w-9 overflow-hidden rounded-full ring-2 ring-gray-100 transition hover:ring-lime-400"
+                >
+                  {session.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt="User avatar"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gray-100 text-[13px] font-bold text-gray-600">
+                      {(session.user?.name ||
+                        session.user?.email ||
+                        "U")[0].toUpperCase()}
+                    </div>
+                  )}
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2.5 w-52 origin-top-right rounded-2xl border border-gray-100 bg-white p-1.5 shadow-xl ring-1 ring-black/5">
+                    <button
+                      type="button"
+                      onClick={() => signOut()}
+                      className="flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <Link
             href="/cart"
@@ -129,22 +188,24 @@ export default function NavbarComponent() {
             </span> */}
           </Link>
 
-          <Button
-            isIconOnly
-            variant="secondary"
-            className="h-10 w-10 shrink-0 rounded-full border border-gray-200 text-gray-700 md:hidden"
+          <button
+            type="button"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 md:hidden"
             aria-expanded={open}
             aria-controls="mobile-nav"
-            onPress={() => setOpen((v) => !v)}
+            onClick={() => setOpen((v) => !v)}
           >
             <span className="sr-only">Menu</span>
             {open ? "✕" : "☰"}
-          </Button>
+          </button>
         </div>
       </div>
 
       {open && (
-        <div id="mobile-nav" className="border-t border-gray-100 bg-white py-3 md:hidden">
+        <div
+          id="mobile-nav"
+          className="border-t border-gray-100 bg-white py-3 md:hidden"
+        >
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-1">
             {centerLinks.map(({ href, label }) => (
               <Link
@@ -156,20 +217,34 @@ export default function NavbarComponent() {
                 {label}
               </Link>
             ))}
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="rounded-xl px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setOpen(false)}
-              className="rounded-xl px-3 py-3 text-sm font-medium text-lime-800 hover:bg-lime-50"
-            >
-              Register
-            </Link>
+            {!session ? (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl px-3 py-3 text-sm font-medium text-lime-800 hover:bg-lime-50"
+                >
+                  Register
+                </Link>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  signOut();
+                }}
+                className="flex rounded-xl px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 text-left"
+              >
+                Logout
+              </button>
+            )}
             <Link
               href="/cart"
               onClick={() => setOpen(false)}
