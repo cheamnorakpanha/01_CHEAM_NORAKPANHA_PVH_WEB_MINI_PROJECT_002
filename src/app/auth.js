@@ -30,10 +30,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             response.status === 200 ||
             response.status === "200")
         ) {
-          console.log("Login success. Payload:", response.payload);
-          return response.payload;
+          const user = response.payload;
+
+          return {
+            id: user.id,
+            email: user.email,
+            accessToken: user.token,
+          };
         }
-        console.warn("Login failed or unexpected status:", response?.status);
+
+        console.warn("Login failed:", response?.status);
         return null;
       },
     }),
@@ -47,11 +53,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      const data = { ...token, ...user };
-      return data;
+      if (user) {
+        token.accessToken = user.accessToken;
+        token.email = user.email;
+        token.id = user.id;
+      }
+      return token;
     },
+
     async session({ session, token }) {
-      session.user = token;
+      session.user = {
+        id: token.id,
+        email: token.email,
+        accessToken: token.accessToken,
+      };
       return session;
     },
   },

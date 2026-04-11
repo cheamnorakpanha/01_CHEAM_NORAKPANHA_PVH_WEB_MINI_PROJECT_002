@@ -1,4 +1,4 @@
-import { auth } from "@/libs/auth";
+import { auth } from "@/app/auth";
 
 export const proxy = auth((request) => {
   if (!request.auth) {
