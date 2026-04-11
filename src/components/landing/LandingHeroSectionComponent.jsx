@@ -42,28 +42,34 @@ export default function LandingHeroSectionComponent({ miniProducts }) {
               Our best sellers
             </p>
             <div className="mt-3 flex gap-2">
-              {miniProducts.map((p) => (
-                <Link
-                  key={p.productId}
-                  href={`/products/${p.productId}`}
-                  className="relative size-14 overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-100"
-                >
-                  {p.imageUrl ? (
-                    <Image
-                      src={p.imageUrl}
-                      alt=""
-                      fill
-                      sizes="56px"
-                      className="object-cover"
-                      priority
-                    />
-                  ) : (
-                    <span className="flex size-full items-center justify-center text-xs text-gray-400">
-                      ◇
-                    </span>
-                  )}
-                </Link>
-              ))}
+              {miniProducts.map((p) => {
+                const isValidUrl =
+                  typeof p.imageUrl === "string" &&
+                  (p.imageUrl.startsWith("/") || p.imageUrl.startsWith("http"));
+
+                return (
+                  <Link
+                    key={p.productId}
+                    href={`/products/${p.productId}`}
+                    className="relative size-14 overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-100"
+                  >
+                    {isValidUrl ? (
+                      <Image
+                        src={p.imageUrl}
+                        alt=""
+                        fill
+                        sizes="56px"
+                        className="object-cover"
+                        priority
+                      />
+                    ) : (
+                      <span className="flex size-full items-center justify-center text-xs text-gray-400">
+                        ◇
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>

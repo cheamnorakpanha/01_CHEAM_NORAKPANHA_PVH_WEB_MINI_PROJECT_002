@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn } from "@/libs/auth";
+import { signIn } from "@/app/auth";
 import { LoginFormSchema } from "@/validations/login.schema";
 
 export const signInAction = async (formData) => {
@@ -21,7 +21,7 @@ export const signInAction = async (formData) => {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/",
+      redirect: true,
     });
   } catch (error) {
     if (error.message?.includes("NEXT_REDIRECT")) {
