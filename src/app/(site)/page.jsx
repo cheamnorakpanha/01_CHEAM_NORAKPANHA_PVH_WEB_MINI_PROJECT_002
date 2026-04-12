@@ -21,7 +21,7 @@ export default async function Home() {
     bestSellersItems =
       apiData?.payload
         ?.filter((p) => isValidImage(p.imageUrl))
-        .slice(0, 3) // limit to 3
+        .slice(0, 4) // limit to 4
         .map((p) => ({
           productId: p.productId,
           productName: p.name,
@@ -32,7 +32,7 @@ export default async function Home() {
     bestSellersItems =
       bestSellers
         .filter((p) => isValidImage(p.imageUrl))
-        .slice(0, 3)
+        .slice(0, 4)
         .map((p) => ({
           productId: p.productId,
           productName: p.name,
