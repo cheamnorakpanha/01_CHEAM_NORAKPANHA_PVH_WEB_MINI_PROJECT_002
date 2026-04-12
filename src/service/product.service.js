@@ -65,7 +65,7 @@ const getAllProducts = async (token) => {
     }
 
     const result = await response.json();
-    
+
     console.log("API RESULT:", result);
 
     return result?.payload || [];
@@ -82,17 +82,16 @@ const getProductsByCategory = async (categoryId, token) => {
       return [];
     }
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/products/category/${categoryId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/categories/${categoryId}/products`;
+
+    console.log("CATEGORY FETCH:", url);
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+      cache: "no-store",
+    });
 
     if (!response.ok) {
       console.log("API Error:", response.status, await response.text());
@@ -100,6 +99,9 @@ const getProductsByCategory = async (categoryId, token) => {
     }
 
     const result = await response.json();
+
+    console.log("CATEGORY RESULT:", result);
+
     return result?.payload || [];
   } catch (error) {
     console.log("Error fetching category products:", error);
