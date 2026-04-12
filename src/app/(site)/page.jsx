@@ -8,42 +8,45 @@ import { getTopSellingProducts } from "@/service/product.service";
 import { auth } from "@/app/auth";
 
 export default async function Home() {
-  const bestSellers = products.slice(0, 4);
-
   const session = await auth();
-  console.log("SESSION:", session);
-
-  let miniProducts = [];
 
   const isValidImage = (url) =>
     typeof url === "string" && (url.startsWith("/") || url.startsWith("http"));
 
+  let bestSellersItems = [];
+
   if (session?.user?.accessToken) {
     const apiData = await getTopSellingProducts();
 
-    miniProducts =
+    bestSellersItems =
       apiData?.payload
         ?.filter((p) => isValidImage(p.imageUrl))
         .slice(0, 3) // limit to 3
         .map((p) => ({
           productId: p.productId,
+          productName: p.name,
+          price: p.price,
           imageUrl: p.imageUrl,
         })) || [];
   } else {
-    miniProducts =
+    bestSellersItems =
       bestSellers
         .filter((p) => isValidImage(p.imageUrl))
-        .slice(0, 3) // limit to 3
+        .slice(0, 3)
         .map((p) => ({
           productId: p.productId,
+          productName: p.name,
+          price: p.price,
           imageUrl: p.imageUrl,
         })) || [];
   }
 
+  console.log("SESSION:", session);
+
   return (
     <div className="bg-[#fafafa]">
-      <LandingHeroSectionComponent miniProducts={miniProducts} />
-      <LandingBestSellerSectionComponent items={bestSellers} />
+      <LandingHeroSectionComponent miniProducts={bestSellersItems} />
+      <LandingBestSellerSectionComponent items={bestSellersItems} />
       <LandingEssentialComponent />
 
       <section className="mx-auto w-full max-w-7xl py-16 lg:py-20">

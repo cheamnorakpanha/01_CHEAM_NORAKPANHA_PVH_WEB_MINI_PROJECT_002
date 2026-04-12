@@ -1,6 +1,6 @@
 import { auth } from "@/app/auth";
 
-export const getTopSellingProducts = async () => {
+const getTopSellingProducts = async () => {
   try {
     const session = await auth();
     const token = session?.user?.accessToken;
@@ -24,11 +24,8 @@ export const getTopSellingProducts = async () => {
       },
     );
 
-    if (!response.ok) {
-      console.error(
-        `API Error: ${response.status}`,
-        await response.text(),
-      );
+    if (!response) {
+      console.error(`API Error: ${response.status}`, await response.text());
       return null;
     }
 
@@ -42,3 +39,69 @@ export const getTopSellingProducts = async () => {
     return null;
   }
 };
+
+const getAllProducts = async () => {
+  const getAllProducts = async () => {
+    try {
+      const session = await auth();
+      const token = session?.user?.accessToken;
+
+      if (!token) {
+        console.warn("No authentication token available");
+        return [];
+      }
+
+      const response = await fetch(`${process.env.AUTH_API_URL}/products`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!response) {
+        console.error(`API Error: ${response.status}`, await response.text());
+        return [];
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      return [];
+    }
+  };
+};
+
+const getProductsByCategory = async (categoryId) => {
+  try {
+    const session = await auth();
+    const token = session?.user?.accessToken;
+
+    if (!token) return [];
+
+    const response = await fetch(
+      `${process.env.AUTH_API_URL}/categories/${categoryId}/products`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      },
+    );
+
+    if (!response) {
+      console.error(`API Error: ${response.status}`, await response.text());
+      return [];
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching category products:", error);
+    return [];
+  }
+};
+
+export { getTopSellingProducts, getAllProducts, getProductsByCategory };
