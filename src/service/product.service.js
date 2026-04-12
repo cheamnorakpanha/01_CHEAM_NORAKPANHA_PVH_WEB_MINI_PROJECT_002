@@ -109,4 +109,31 @@ const getProductsByCategory = async (categoryId, token) => {
   }
 };
 
-export { getTopSellingProducts, getAllProducts, getProductsByCategory };
+const getAllCategories = async (token) => {
+  try {
+    if (!token) return [];
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/categories`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    const result = await response.json();
+
+    return result?.payload || [];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+export {
+  getTopSellingProducts,
+  getAllProducts,
+  getProductsByCategory,
+  getAllCategories,
+};
