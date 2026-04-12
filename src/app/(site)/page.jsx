@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { categories, products } from "../../data/mockData";
+import { categories } from "../../data/mockData";
 import LandingHeroSectionComponent from "../../components/landing/LandingHeroSectionComponent";
 import LandingBestSellerSectionComponent from "../../components/landing/LandingBestSellerSectionComponent";
 import LandingEssentialComponent from "../../components/landing/LandingEssentialComponent";
