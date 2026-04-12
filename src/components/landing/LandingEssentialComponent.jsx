@@ -1,23 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@heroui/react";
 import {
   ESSENTIALS_TABS,
   filterProductsByEssentialsTab,
-  products,
 } from "../../data/mockData";
 import ProductCardComponent from "../ProductCardComponent";
+import { getAllProducts } from "@/service/product.service";
+import { useSession } from "next-auth/react";
 
 const PAGE_SIZE = 8;
 
 export default function LandingEssentialsGrid() {
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
+
   const [tab, setTab] = useState("All");
+  const [products, setProducts] = useState([]);
   const [showAll, setShowAll] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const filtered = filterProductsByEssentialsTab(products, tab);
   const visible = showAll ? filtered : filtered.slice(0, PAGE_SIZE);
   const canLoadMore = !showAll && filtered.length > PAGE_SIZE;
+
+  useEffect(() => {
+    if (!token) return;
+
+    async function fetchData() {
+      setLoading(true);
+      const data = await getAllProducts(token);
+      setProducts(data || []);
+      setShowAll(false);
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [token]);
 
   return (
     <section id="shop" className="mx-auto w-full max-w-7xl py-16 lg:py-20">
@@ -26,7 +46,8 @@ export default function LandingEssentialsGrid() {
           Our skincare essentials
         </h2>
         <p className="mt-2 max-w-lg text-gray-500">
-          Filter by routine step — same mock catalog, organized for quick discovery.
+          Filter by routine step — same mock catalog, organized for quick
+          discovery.
         </p>
       </div>
 
@@ -60,12 +81,14 @@ export default function LandingEssentialsGrid() {
 
       <div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
         {visible.map((product, index) => (
-          <ProductCardComponent product={product} key={index}/>
+          <ProductCardComponent product={product} key={product.productId} />
         ))}
       </div>
 
       {filtered.length === 0 && (
-        <p className="mt-12 text-center text-gray-500">No products in this tab — try “All”.</p>
+        <p className="mt-12 text-center text-gray-500">
+          No products in this tab — try “All”.
+        </p>
       )}
 
       {canLoadMore && (

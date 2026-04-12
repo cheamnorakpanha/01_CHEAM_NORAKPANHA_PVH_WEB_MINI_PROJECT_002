@@ -24,64 +24,66 @@ const getTopSellingProducts = async () => {
       },
     );
 
-    if (!response) {
-      console.error(`API Error: ${response.status}`, await response.text());
+    if (!response.ok) {
+      console.log(`API Error: ${response.status}`, await response.text());
       return null;
     }
 
     const data = await response.json();
 
-    console.log("API RESPONSE:", data);
+    // console.log("API RESPONSE:", data);
 
     return data;
   } catch (error) {
-    console.error("Error fetching top selling products:", error);
+    console.log("Error fetching top selling products:", error);
     return null;
   }
 };
 
-const getAllProducts = async () => {
-  const getAllProducts = async () => {
-    try {
-      const session = await auth();
-      const token = session?.user?.accessToken;
-
-      if (!token) {
-        console.warn("No authentication token available");
-        return [];
-      }
-
-      const response = await fetch(`${process.env.AUTH_API_URL}/products`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
-      });
-
-      if (!response) {
-        console.error(`API Error: ${response.status}`, await response.text());
-        return [];
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching products:", error);
+const getAllProducts = async (token) => {
+  try {
+    if (!token) {
+      console.warn("No authentication token available");
       return [];
     }
-  };
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/products`;
+
+    console.log("FETCH URL:", url);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      console.log("API Error:", response.status, await response.text());
+      return [];
+    }
+
+    const result = await response.json();
+    
+    console.log("API RESULT:", result);
+
+    return result?.payload || [];
+  } catch (error) {
+    console.error("Error fetching all products:", error);
+    return [];
+  }
 };
 
-const getProductsByCategory = async (categoryId) => {
+const getProductsByCategory = async (categoryId, token) => {
   try {
-    const session = await auth();
-    const token = session?.user?.accessToken;
-
-    if (!token) return [];
+    if (!token) {
+      console.warn("No authentication token available");
+      return [];
+    }
 
     const response = await fetch(
-      `${process.env.AUTH_API_URL}/categories/${categoryId}/products`,
+      `${process.env.NEXT_PUBLIC_API_URL}/products/category/${categoryId}`,
       {
         method: "GET",
         headers: {
@@ -92,14 +94,15 @@ const getProductsByCategory = async (categoryId) => {
       },
     );
 
-    if (!response) {
-      console.error(`API Error: ${response.status}`, await response.text());
+    if (!response.ok) {
+      console.log("API Error:", response.status, await response.text());
       return [];
     }
 
-    return await response.json();
+    const result = await response.json();
+    return result?.payload || [];
   } catch (error) {
-    console.error("Error fetching category products:", error);
+    console.log("Error fetching category products:", error);
     return [];
   }
 };
