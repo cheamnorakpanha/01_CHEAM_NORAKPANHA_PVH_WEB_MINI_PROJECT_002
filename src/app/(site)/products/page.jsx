@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { getAllProducts, getAllCategories } from "@/service/product.service";
+import SectionHeaderComponent from "@/components/SectionHeaderComponent";
 
 export default function Page() {
   const { data: session } = useSession();
@@ -119,26 +120,27 @@ export default function Page() {
     setSearch("");
   };
 
-  if (loading) return <p className="p-10">Loading products...</p>;
+  if (loading)
+    return (
+      <p className="flex items-center justify-center h-screen">
+        Loading products...
+      </p>
+    );
 
   return (
     <div className="max-w-7xl mx-auto py-16">
       {/* Header */}
-      <div className="flex items-center justify-between mb-12">
-        <div>
-          <h1 className="text-3xl font-semibold">Luxury beauty products</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Use the filters to narrow by price and brand.
-          </p>
-        </div>
-
+      <SectionHeaderComponent
+        title={"Luxury beauty products"}
+        desc={"Use the filters to narrow by price and brand."}
+      >
         <Input
           placeholder="Search by product name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs bg-gray-100 border rounded-lg px-4 py-5"
+          className="max-w-xs bg-gray-100 border rounded-lg px-4 py-5 focus-visible:ring-lime-400"
         />
-      </div>
+      </SectionHeaderComponent>
 
       <div className="grid grid-cols-12 gap-8">
         {/* Sidebar */}
@@ -260,21 +262,20 @@ export default function Page() {
 
 function ProductNotFound({ handleResetFilters }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="text-4xl mb-4">🛍️</div>
-
-      <h3 className="text-lg font-semibold text-gray-900">No products found</h3>
+    <div className="flex flex-col items-center justify-center py-20 text-center border shadow rounded-lg">
+      <h3 className="text-lg font-semibold text-gray-900">
+        No products match these filters
+      </h3>
 
       <p className="text-sm text-gray-500 mt-2 max-w-sm">
-        Try adjusting your filters or search term to find what you're looking
-        for.
+        Try raising the price limit or clearing category filters.
       </p>
 
       <button
         onClick={handleResetFilters}
         className="mt-6 px-5 py-2.5 text-sm font-medium rounded-full border border-gray-900 bg-gray-900 text-white hover:bg-gray-800 transition"
       >
-        Reset filters
+        Reset all filters
       </button>
     </div>
   );
