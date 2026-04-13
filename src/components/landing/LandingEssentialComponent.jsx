@@ -54,7 +54,7 @@ export default function LandingEssentialsGrid() {
         data = await getAllProducts(token);
       } else {
         console.log("Fetching category:", tab);
-        data = await getProductsByCategory(tab, token); // tab = categoryId
+        data = await getProductsByCategory(tab, token);
       }
 
       console.log("PRODUCTS:", data);

@@ -141,7 +141,7 @@ export default async function Home() {
 
       {/* <LandingDiscountTicker /> */}
 
-      <section className="mx-auto w-full max-w-7xl py-14 text-center text-sm text-gray-500">
+      {/* <section className="mx-auto w-full max-w-7xl py-14 text-center text-sm text-gray-500">
         <p>
           Explore{" "}
           <Link
@@ -159,7 +159,7 @@ export default async function Home() {
           </Link>{" "}
           from the same project.
         </p>
-      </section>
+      </section> */}
     </div>
   );
 }
