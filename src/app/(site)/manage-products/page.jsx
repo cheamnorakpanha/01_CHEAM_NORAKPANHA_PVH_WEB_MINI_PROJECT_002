@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -14,8 +13,10 @@ import { Check, ChevronDown, Plus } from "lucide-react";
 import SectionHeaderComponent from "@/components/SectionHeaderComponent";
 import ProduceCardWithModifyComponent from "@/components/manage-products/ProduceCardWithModifyComponent";
 import CreateProductModal from "@/components/manage-products/CreateProductModal";
+import EditProductModal from "@/components/manage-products/EditProductModal";
 
-import { getAllProducts } from "@/service/product.service";
+import { getAllProducts, deleteProductById } from "@/service/product.service";
+import { categories } from "@/data/mockData";
 
 const options = [
   { label: "Name (A-Z)", value: "name-asc" },
@@ -30,9 +31,10 @@ export default function Page() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const current = options.find((o) => o.value === selected);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -44,8 +46,13 @@ export default function Page() {
 
       try {
         const data = await getAllProducts(session.user.accessToken);
-        setProducts(data || []);
-        setError(null);
+
+        const normalized = (data || []).map((item) => ({
+          ...item,
+          productName: item.name,
+        }));
+
+        setProducts(normalized);
       } catch (err) {
         console.error(err);
         setError("Failed to load products");
@@ -76,11 +83,11 @@ export default function Page() {
   };
 
   const handleEdit = (product) => {
-    router.push(`/products/edit/${product.productId}`);
+    setEditingProduct(product);
+    setIsEditOpen(true);
   };
 
   const handleCreateProduct = (formData) => {
-    // Add new product to the list (demo only)
     const newProduct = {
       productId: Date.now().toString(),
       productName: formData.name,
@@ -147,7 +154,7 @@ export default function Page() {
           <h1 className="text-xl font-bold text-gray-900">Products</h1>
 
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsCreateOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 mb-4 bg-lime-400 hover:bg-lime-500 text-sm text-gray-900 font-semibold rounded-full"
           >
             <Plus className="w-5 h-5" />
@@ -182,9 +189,20 @@ export default function Page() {
       </div>
 
       <CreateProductModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateProduct}x
+        open={isCreateOpen}
+        onClose={() => {
+          setIsCreateOpen(false);
+        }}
+        categories={categories}
+        buttonText="Create Product"
+      />
+      <EditProductModal
+        open={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setEditingProduct(null);
+        }}
+        product={editingProduct}
       />
     </div>
   );

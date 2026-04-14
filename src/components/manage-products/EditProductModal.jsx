@@ -3,17 +3,11 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { getAllCategories, createProduct } from "@/service/product.service";
+import { getAllCategories, updateProductById } from "@/service/product.service";
 
-export default function CreateProductModal({
-  open,
-  onClose,
-  onSubmit,
-  buttonText,
-  categories: initialCategories,
-}) {
+export default function EditProductModal({ open, onClose, product }) {
   const { data: session } = useSession();
-  const [categoryList, setCategoryList] = useState(initialCategories || []);
+  const [categoryList, setCategoryList] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -62,10 +56,10 @@ export default function CreateProductModal({
       description: form.description,
     };
 
-    const result = await createProduct(payload, token);
+    const result = await updateProductById(product.productId, payload, token);
 
     if (result) {
-      alert("Product created!");
+      alert("Product updated!");
       onClose();
     } else {
       alert("Failed");
@@ -78,7 +72,6 @@ export default function CreateProductModal({
     const fetchCategories = async () => {
       try {
         const data = await getAllCategories(session.user.accessToken);
-        console.log("API:", data);
         setCategoryList(data || []);
       } catch (err) {
         console.error(err);
@@ -89,6 +82,20 @@ export default function CreateProductModal({
     fetchCategories();
   }, [session]);
 
+  useEffect(() => {
+    if (product) {
+      setForm({
+        name: product.productName || "",
+        price: product.price || "",
+        category: product.categoryId || "",
+        imageUrl: product.imageUrl || "",
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        description: product.description || "",
+      });
+    }
+  }, [product]);
+
   if (!open) return null;
 
   return (
@@ -96,10 +103,8 @@ export default function CreateProductModal({
       <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-lg">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h2 className="text-lg font-semibold">Create product</h2>
-            <p className="text-sm text-gray-500">
-              Demo CRUD only (local state). Refresh resets changes.
-            </p>
+            <h2 className="text-lg font-semibold">Edit product</h2>
+            <p className="text-sm text-gray-500">Update product details</p>
           </div>
 
           <button onClick={onClose}>
@@ -115,9 +120,9 @@ export default function CreateProductModal({
               </label>
               <input
                 name="name"
-                placeholder="e.g. Tea-Trica BHA Foam"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
+                value={form.name}
                 onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
               />
             </div>
             <div>
@@ -126,9 +131,9 @@ export default function CreateProductModal({
               </label>
               <input
                 name="price"
-                placeholder="e.g. 62"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
+                value={form.price}
                 onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
               />
             </div>
           </div>
@@ -140,8 +145,9 @@ export default function CreateProductModal({
               </label>
               <select
                 name="category"
-                className="w-full border text-black border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
+                value={form.category}
                 onChange={handleChange}
+                className="w-full border text-black border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
               >
                 <option value="">
                   {categoryList.length === 0 ? "Loading..." : "Select..."}
@@ -158,15 +164,16 @@ export default function CreateProductModal({
                 ))}
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Image URL (optional)
               </label>
               <input
                 name="imageUrl"
-                placeholder="https://"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
+                value={form.imageUrl}
                 onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
               />
             </div>
           </div>
@@ -185,9 +192,9 @@ export default function CreateProductModal({
                     type="checkbox"
                     checked={form.colors.includes(c)}
                     onChange={() => toggleValue("colors", c)}
-                    className="w-4 h-4 border border-gray-300 rounded focus:outline-none"
+                    className="w-4 h-4 border border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700 capitalize">{c}</span>
+                  <span className="text-sm capitalize">{c}</span>
                 </label>
               ))}
             </div>
@@ -207,9 +214,9 @@ export default function CreateProductModal({
                     type="checkbox"
                     checked={form.sizes.includes(s)}
                     onChange={() => toggleValue("sizes", s)}
-                    className="w-4 h-4 border border-gray-300 rounded focus:outline-none"
+                    className="w-4 h-4 border border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700">{s}</span>
+                  <span className="text-sm">{s}</span>
                 </label>
               ))}
             </div>
@@ -221,10 +228,10 @@ export default function CreateProductModal({
             </label>
             <textarea
               name="description"
-              placeholder="Short description shown on the product card..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
-              rows={4}
+              value={form.description}
               onChange={handleChange}
+              rows={4}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400"
             />
           </div>
         </div>
@@ -241,7 +248,7 @@ export default function CreateProductModal({
             onClick={handleSubmit}
             className="px-4 py-2 rounded-full bg-lime-400 hover:bg-lime-500 text-sm font-semibold"
           >
-            {buttonText}
+            Update Product
           </button>
         </div>
       </div>

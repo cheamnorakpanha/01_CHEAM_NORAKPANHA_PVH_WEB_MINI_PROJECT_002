@@ -131,7 +131,7 @@ const getAllCategories = async (token) => {
   }
 };
 
-const updateProducyById = async (productId, updatedData, token) => {
+const updateProductById = async (productId, updatedData, token) => {
   try {
     if (!token) {
       console.warn("No authentication token available");
@@ -147,7 +147,7 @@ const updateProducyById = async (productId, updatedData, token) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(updatedData),
     });
 
     if (!response.ok) {
@@ -193,11 +193,39 @@ const deleteProductById = async (productId, token) => {
   }
 };
 
+const createProduct = async (productData, token) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/products`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(productData),
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Create error:", errorText);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Create product error:", error);
+    return null;
+  }
+};
+
 export {
   getTopSellingProducts,
   getAllProducts,
   getProductsByCategory,
   getAllCategories,
-  updateProducyById,
+  updateProductById,
   deleteProductById,
+  createProduct,
 };
