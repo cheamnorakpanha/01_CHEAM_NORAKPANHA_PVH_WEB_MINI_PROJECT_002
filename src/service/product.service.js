@@ -131,9 +131,73 @@ const getAllCategories = async (token) => {
   }
 };
 
+const updateProducyById = async (productId, updatedData, token) => {
+  try {
+    if (!token) {
+      console.warn("No authentication token available");
+      return null;
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`;
+    console.log("UPDATE URL:", url);
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      console.log("Update Error:", response.status, await response.text());
+      return null;
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return null;
+  }
+};
+
+const deleteProductById = async (productId, token) => {
+  try {
+    if (!token) {
+      console.warn("No authentication token available");
+      return false;
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`;
+
+    console.log("DELETE URL:", url);
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.log("Delete Error:", response.status, await response.text());
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return false;
+  }
+};
+
 export {
   getTopSellingProducts,
   getAllProducts,
   getProductsByCategory,
   getAllCategories,
+  updateProducyById,
+  deleteProductById,
 };
