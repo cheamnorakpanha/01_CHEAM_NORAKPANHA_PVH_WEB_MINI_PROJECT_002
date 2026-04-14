@@ -131,9 +131,101 @@ const getAllCategories = async (token) => {
   }
 };
 
+const updateProductById = async (productId, updatedData, token) => {
+  try {
+    if (!token) {
+      console.warn("No authentication token available");
+      return null;
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`;
+    console.log("UPDATE URL:", url);
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updatedData),
+    });
+
+    if (!response.ok) {
+      console.log("Update Error:", response.status, await response.text());
+      return null;
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return null;
+  }
+};
+
+const deleteProductById = async (productId, token) => {
+  try {
+    if (!token) {
+      console.warn("No authentication token available");
+      return false;
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`;
+
+    console.log("DELETE URL:", url);
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.log("Delete Error:", response.status, await response.text());
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return false;
+  }
+};
+
+const createProduct = async (productData, token) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/products`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(productData),
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Create error:", errorText);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Create product error:", error);
+    return null;
+  }
+};
+
 export {
   getTopSellingProducts,
   getAllProducts,
   getProductsByCategory,
   getAllCategories,
+  updateProductById,
+  deleteProductById,
+  createProduct,
 };

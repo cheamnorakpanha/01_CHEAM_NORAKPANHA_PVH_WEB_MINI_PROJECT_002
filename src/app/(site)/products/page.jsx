@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { getAllProducts, getAllCategories } from "@/service/product.service";
 import SectionHeaderComponent from "@/components/SectionHeaderComponent";
+import LoadingProductComponent from "@/components/LoadingProductComponent";
 
 export default function Page() {
   const { data: session } = useSession();
@@ -122,9 +123,7 @@ export default function Page() {
 
   if (loading)
     return (
-      <p className="flex items-center justify-center h-screen">
-        Loading products...
-      </p>
+      <LoadingProductComponent />
     );
 
   return (
